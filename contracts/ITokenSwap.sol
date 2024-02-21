@@ -2,5 +2,5 @@
 pragma solidity ^0.8.24;
 
 interface ITokenSwap {
-    function swap(uint256 _tokenAmount) external returns (bool);
+    function swap(uint256 amount1, uint256 amount2) external;
 }

@@ -6,50 +6,46 @@ error ZERO_ADDRESS_DETECTED();
 error CANNOT_SWAP_ZERO_VALUE();
 
 contract TokenSwap {
-    address owner;
-    IERC20 sendToken;
-    IERC20 recieveToken;
+    IERC20 public token1;
+    address public owner1;
+    IERC20 public token2;
+    address public owner2;
 
-    event TokenSwapped(address sender, uint256 amount, bool success);
-
-    constructor(address _sendToken, address _recieveToken) {
-        owner = msg.sender;
-        sendToken = IERC20(_sendToken);
-        recieveToken = IERC20(_recieveToken);
+    constructor(
+        address _token1,
+        address _owner1,
+        address _token2,
+        address _owner2
+    ) {
+        token1 = IERC20(_token1);
+        owner1 = _owner1;
+        token2 = IERC20(_token2);
+        owner2 = _owner2;
     }
 
-    function swap(uint256 _tokenAmount) external returns (bool) {
-        if(msg.sender == address(0)) {
-            revert ZERO_ADDRESS_DETECTED();
-        }
+    function swap(uint256 amount1, uint256 amount2) external {
+        require(msg.sender == owner1 || msg.sender == owner2, "Not authorized");
+        require(
+            token1.allowance(owner1, address(this)) >= amount1,
+            "Token 1 allowance too low"
+        );
+        require(
+            token2.allowance(owner2, address(this)) >= amount2,
+            "Token 2 allowance too low"
+        );
 
-        if (_tokenAmount < 0) {
-            revert CANNOT_SWAP_ZERO_VALUE();
-        }
-
-        uint256 ratio = tokenRatio();
-
-        uint256 calculatedRation = _tokenAmount * ratio;
-
-        sendToken.transferFrom(msg.sender, address(this), _tokenAmount);
-
-        bool swapSuccess = recieveToken.transfer(msg.sender, calculatedRation);
-
-        emit TokenSwapped(msg.sender, _tokenAmount, swapSuccess);
-
-        return swapSuccess;
+        _safeTransferFrom(token1, owner1, owner2, amount1);
+        _safeTransferFrom(token2, owner2, owner1, amount2);
     }
 
-    function tokenRatio() internal view returns (uint256) {
-        uint256 totalSendToken = sendToken.totalSupply();
-        uint256 totalRecieveToken = recieveToken.totalSupply();
-
-        if(totalSendToken <= 0 || totalRecieveToken <= 0) {
-            revert CANNOT_SWAP_ZERO_VALUE();
-        }
-
-        uint calculateTokenRatio = (totalRecieveToken * 1e18) / totalSendToken;
-
-        return  calculateTokenRatio;
+    function _safeTransferFrom(
+        IERC20 token,
+        address sender,
+        address recipient,
+        uint amount
+    ) private {
+        bool sent = token.transferFrom(sender, recipient, amount);
+        require(sent, "Token transfer failed");
     }
 }
+

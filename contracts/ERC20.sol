@@ -9,6 +9,6 @@ contract ERC20Token is ERC20, Ownable {
         ERC20(tokenName, symbol)
         Ownable(initialAddress)
     {
-        _mint(msg.sender, 1000 * 10 ** decimals());
+        _mint(msg.sender, 10000 * 10 ** decimals());
     }
 }

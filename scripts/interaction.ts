@@ -20,17 +20,18 @@ async function main() {
 
   await approveTwo.wait();
 
-  const tokenAmount = 30;
+  const tokenAmount1 = 100;
+  const tokenAmount2 = 200;
 
   const TokenSwap = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
 
   const SWAPPING = await ethers.getContractAt("ITokenSwap", TokenSwap);
 
-  const createStakingTx = await SWAPPING.swap(tokenAmount);
+  const createSwappingTx = await SWAPPING.swap(tokenAmount1, tokenAmount2);
 
-  await createStakingTx.wait();
+  await createSwappingTx.wait();
 
-  console.log(createStakingTx);
+  console.log(createSwappingTx);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
